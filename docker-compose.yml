@@ -1,0 +1,21 @@
+services:
+  kokoro-tts:
+    platform: linux/arm64
+    build:
+      context: .
+    image: kokoro-tts:arm64
+    container_name: kokoro-tts
+    ports:
+      - "5005:5005"
+    environment:
+      HF_HOME: /app/.cache/huggingface
+      XDG_CACHE_HOME: /app/.cache
+      TRANSFORMERS_CACHE: /app/.cache/huggingface/transformers
+    volumes:
+      - kokoro-cache:/app/.cache
+      - generated-data:/app/generated
+    restart: unless-stopped
+
+volumes:
+  kokoro-cache:
+  generated-data:

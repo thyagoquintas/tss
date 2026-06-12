@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kokoro TTS</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark">K</span>
+          <div>
+            <h1>Kokoro TTS</h1>
+            <p id="deviceStatus">Verificando dispositivo</p>
+          </div>
+        </div>
+      </header>
+
+      <form id="ttsForm" class="steps">
+        <section id="imagePanel" class="step-card" tabindex="0">
+          <header class="step-header">
+            <span class="step-number">1</span>
+            <div>
+              <h2>Entrada</h2>
+              <p id="imageName">Cole imagens, adicione arquivos ou digite o texto no próximo passo.</p>
+            </div>
+          </header>
+
+          <div class="step-body input-grid">
+            <div class="upload-box">
+              <input
+                id="imageInput"
+                name="images"
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/bmp,image/tiff"
+                multiple
+                hidden
+              />
+              <div id="emptyQueue" class="empty-queue">
+                <strong>Ctrl+V ou selecione imagens</strong>
+                <span>PNG, JPG, WEBP, BMP ou TIFF</span>
+              </div>
+              <div id="imageQueue" class="image-queue"></div>
+            </div>
+
+            <div class="quick-actions">
+              <button id="addImagesButton" class="button secondary" type="button">Adicionar imagens</button>
+              <button id="ocrButton" class="button secondary" type="button">Extrair texto</button>
+              <button id="clearButton" class="button subtle" type="button">Limpar tudo</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="step-card">
+          <header class="step-header">
+            <span class="step-number">2</span>
+            <div>
+              <h2>Revisão do texto</h2>
+              <p id="ocrMeta">O texto final para narração fica aqui.</p>
+            </div>
+          </header>
+
+          <div class="step-body">
+            <textarea
+              id="textInput"
+              name="text"
+              maxlength="10000"
+              spellcheck="true"
+              autofocus
+            ></textarea>
+          </div>
+        </section>
+
+        <section class="step-card">
+          <header class="step-header">
+            <span class="step-number">3</span>
+            <div>
+              <h2>Voz e geração</h2>
+              <p>Escolha a voz, ajuste a velocidade e gere o MP3.</p>
+            </div>
+          </header>
+
+          <div class="step-body settings-grid">
+            <label class="field-control">
+              <span>Voz</span>
+              <select id="voiceInput" name="voice">
+                <option value="pf_dora">Dora</option>
+                <option value="pm_alex">Alex</option>
+                <option value="pm_santa">Santa</option>
+              </select>
+            </label>
+
+            <label class="field-control">
+              <span>Velocidade</span>
+              <div class="range-row">
+                <input
+                  id="speedInput"
+                  name="speed"
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.05"
+                  value="1"
+                />
+                <output id="speedValue" for="speedInput">1.00x</output>
+              </div>
+            </label>
+
+            <button id="submitButton" class="button primary" type="submit">Gerar MP3</button>
+          </div>
+
+          <p id="statusLine" class="status" role="status"></p>
+        </section>
+
+        <section id="outputPanel" class="step-card result-card" hidden>
+          <header class="step-header">
+            <span class="step-number">4</span>
+            <div>
+              <h2>Resultado</h2>
+              <p id="audioMeta">Arquivo gerado</p>
+            </div>
+            <a id="downloadLink" class="button secondary" href="#" download>Baixar</a>
+          </header>
+          <div class="step-body">
+            <audio id="audioPlayer" controls preload="metadata"></audio>
+          </div>
+        </section>
+      </form>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
