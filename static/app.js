@@ -21,8 +21,13 @@ const downloadLink = document.querySelector("#downloadLink");
 const deviceStatus = document.querySelector("#deviceStatus");
 
 const MAX_TEXT_LENGTH = 10000;
+const APP_BASE_URL = new URL("./", window.location.href);
 let imageItems = [];
 let nextImageId = 1;
+
+function appUrl(path) {
+  return new URL(path.replace(/^\/+/, ""), APP_BASE_URL).toString();
+}
 
 function setStatus(message, isError = false) {
   statusLine.textContent = message;
@@ -165,7 +170,7 @@ function moveImage(index, direction) {
 
 async function loadStatus() {
   try {
-    const response = await fetch("/api/status");
+    const response = await fetch(appUrl("api/status"));
     const data = await response.json();
     deviceStatus.textContent = data.cuda ? `CUDA: ${data.label}` : "CPU";
   } catch {
@@ -175,7 +180,7 @@ async function loadStatus() {
 
 async function loadVoices() {
   try {
-    const response = await fetch("/api/voices");
+    const response = await fetch(appUrl("api/voices"));
     const data = await response.json();
     voiceInput.innerHTML = "";
 
@@ -203,7 +208,7 @@ async function requestOcr() {
     formData.append("images", item.file, item.file.name);
   });
 
-  const response = await fetch("/api/ocr", {
+  const response = await fetch(appUrl("api/ocr"), {
     method: "POST",
     body: formData,
   });
@@ -266,7 +271,7 @@ async function generateAudio(event) {
 
     setStatus("Gerando MP3...");
     setBusy(true, "Gerando...");
-    const response = await fetch("/api/generate", {
+    const response = await fetch(appUrl("api/generate"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -283,7 +288,7 @@ async function generateAudio(event) {
       throw new Error(data.detail || "Falha ao gerar MP3.");
     }
 
-    const audioUrl = `${data.audio_url}?t=${Date.now()}`;
+    const audioUrl = `${appUrl(data.audio_url)}?t=${Date.now()}`;
     audioPlayer.src = audioUrl;
     downloadLink.href = audioUrl;
     downloadLink.download = data.filename;

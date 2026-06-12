@@ -12,7 +12,7 @@ from uuid import uuid4
 
 import anyio
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -40,6 +40,7 @@ ALLOWED_IMAGE_TYPES = {
 
 app = FastAPI(title="Kokoro TTS")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/tts/static", StaticFiles(directory=STATIC_DIR), name="tts-static")
 
 tts_lock = Lock()
 ocr_lock = Lock()
@@ -291,7 +292,7 @@ def generate_mp3(text: str, voice: str, speed: float) -> dict[str, str | float]:
         )
 
     return {
-        "audio_url": f"/audio/{output.name}",
+        "audio_url": f"audio/{output.name}",
         "filename": output.name,
         "voice": voice,
         "speed": speed,
@@ -299,22 +300,31 @@ def generate_mp3(text: str, voice: str, speed: float) -> dict[str, str | float]:
 
 
 @app.get("/", response_class=HTMLResponse)
+@app.get("/tts/", response_class=HTMLResponse)
 def index() -> HTMLResponse:
     html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
     return HTMLResponse(html)
 
 
+@app.get("/tts")
+def tts_redirect() -> RedirectResponse:
+    return RedirectResponse(url="/tts/")
+
+
 @app.get("/api/status")
+@app.get("/tts/api/status")
 def status() -> dict[str, str | bool]:
     return detect_device()
 
 
 @app.get("/health")
+@app.get("/tts/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.get("/api/voices")
+@app.get("/tts/api/voices")
 def voices() -> dict[str, str | list[dict[str, str]]]:
     return {
         "default_voice": DEFAULT_VOICE,
@@ -340,6 +350,7 @@ async def read_image_uploads(files: list[UploadFile]) -> list[bytes]:
 
 
 @app.post("/api/ocr")
+@app.post("/tts/api/ocr")
 async def ocr(
     images: list[UploadFile] | None = File(default=None),
     image: UploadFile | None = File(default=None),
@@ -357,6 +368,7 @@ async def ocr(
 
 
 @app.post("/api/generate")
+@app.post("/tts/api/generate")
 async def generate(request: GenerateRequest) -> dict[str, str | float]:
     text = request.text.strip()
     if not text:
@@ -374,6 +386,7 @@ async def generate(request: GenerateRequest) -> dict[str, str | float]:
 
 
 @app.get("/audio/{filename}")
+@app.get("/tts/audio/{filename}")
 def audio(filename: str) -> FileResponse:
     if re.fullmatch(r"[a-f0-9]{32}\.mp3", filename) is None:
         raise HTTPException(status_code=404, detail="Arquivo nao encontrado.")
