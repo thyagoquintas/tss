@@ -7,6 +7,26 @@ from glob import glob
 from pathlib import Path
 
 
+def _patch_phonemizer_compat() -> None:
+    try:
+        from phonemizer.backend.espeak.wrapper import EspeakWrapper
+    except Exception:
+        return
+
+    if hasattr(EspeakWrapper, "set_data_path"):
+        return
+
+    @classmethod
+    def set_data_path(cls, data_path: str) -> None:
+        data_path = str(data_path)
+        os.environ["PHONEMIZER_ESPEAK_DATA"] = data_path
+        os.environ["ESPEAK_DATA_PATH"] = data_path
+        if hasattr(cls, "_ESPEAK_DATA_PATH"):
+            cls._ESPEAK_DATA_PATH = data_path
+
+    EspeakWrapper.set_data_path = set_data_path
+
+
 def _first_existing(paths: list[str]) -> str | None:
     for path in paths:
         if path and Path(path).exists():
@@ -65,3 +85,6 @@ def _site_package_candidates(name: str) -> list[str]:
         if candidate.exists():
             candidates.append(str(candidate))
     return candidates
+
+
+_patch_phonemizer_compat()
